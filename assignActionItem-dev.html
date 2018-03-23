@@ -8,7 +8,9 @@
       document.getElementById('action').addEventListener(
         "formComplete",
         function(event) {
-          window.alert(event.detail.submitLabel);
+          if (event.detail.submitLabel === 'CANCEL') {
+            document.body.removeChild(document.getElementById('action'));
+          }
         },
         false
       );
