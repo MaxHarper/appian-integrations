@@ -1,0 +1,39 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <a href="
+      function format() {
+        window.MAX = window.MAX || {
+          formatted: false
+        };
+        var formatted = window.MAX.formatted;
+
+        ['docs-header-container', 'docs-menubars', 'viewModeButton'].forEach(function(elementId) {
+          var element = document.getElementById(elementId);
+          if (element) {
+            element.style.display = formatted ? '' : 'none';
+          }
+        });
+
+        var outerEditPane = document.getElementsByClassName('kix-zoomdocumentplugin-outer')[0];
+        if (outerEditPane) {
+          var currentWidth = outerEditPane.style.width.replace('px', '');
+          var newWidth = formatted ? currentWidth / 1.5 : currentWidth * 1.5;
+          outerEditPane.style.width = newWidth + 'px';
+          var currentHeight = outerEditPane.style.height.replace('px', '');
+          var newHeight = formatted ? currentHeight / 1.5 : currentHeight * 1.5;
+          outerEditPane.style.height = newHeight + 'px';
+        }
+
+        var innerEditPane = document.getElementsByClassName('kix-zoomdocumentplugin-inner')[0];
+        if (innerEditPane) {
+          innerEditPane.style.transform = formatted ? '' : 'scale(1.5)';
+        }
+
+        window.MAX.formatted = !formatted;
+      }
+      format();
+    >Drag Me To Your Bookmarks</a>
+  </body>
+</html>
