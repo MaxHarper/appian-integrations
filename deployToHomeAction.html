@@ -16,8 +16,171 @@
         right: 1000000px;
       }
     </style>
+    <script>
+      const first = array => array && array.length > 0 && array[0];
+      const last = array => array && array.length > 0 && array[array.length - 1];
+
+      const getInnerTextPredicate = (label) => {
+        if (label == null) {
+          return element => true;
+        }
+        return element => element.innerText === label || element.placeholder === label;
+      }
+
+      const getElement = (getter, tag, options) => {
+        const {allResults, toDisappear} = options || {};
+        return new Promise((resolve, reject) => {
+          const period = 100;
+          const maxWait = 30000;
+          let waited = 0;
+          const runningInterval = setInterval(
+            () => {
+              waited += period;
+              const timeup = waited > maxWait;
+              if (timeup) {
+                clearInterval(runningInterval);
+                const errorMessage = `Export Package Script: Timed out waiting for "${tag}".`;
+                reject(new Error(errorMessage));
+                alert(errorMessage);
+              } else {
+                const elements = getter();
+                let criteriaMet = false;
+                if (elements.length === 0) {
+                  criteriaMet = toDisappear;
+                } else if (toDisappear) {
+                  criteriaMet = false;
+                } else if (allResults) {
+                  criteriaMet = !elements.some(e => e.disabled);
+                } else {
+                  criteriaMet = !last(elements).disabled;
+                }
+                if (criteriaMet) {
+                  clearInterval(runningInterval);
+                  resolve(allResults ? elements : last(elements));
+                }
+              }
+            },
+            period
+          );
+        });
+      };
+
+      const title = (label, options) => {
+        return getElement(
+          () => Array.from(document.getElementsByClassName('TitleText---page_header'))
+                .concat(Array.from(document.getElementsByClassName('HeaderText---richtext_header')))
+                     .filter(getInnerTextPredicate(label)),
+          label,
+          options);
+      };
+
+      const button = (label, options) => {
+        return getElement(
+          () => Array.from(document.getElementsByTagName('button'))
+                     .filter(getInnerTextPredicate(label)),
+          label,
+          options);
+      };
+
+      const tab = (label, options) => {
+        return getElement(
+          () => Array.from(document.getElementsByClassName('TabButtonWidget---tab_label'))
+                     .filter(getInnerTextPredicate(label)),
+          label,
+          options);
+      };
+
+      const dropdown = (label, options) => {
+        return getElement(
+          () => Array.from(document.getElementsByClassName('DropdownWidget---dropdown_value'))
+                     .filter(getInnerTextPredicate(label)),
+          label,
+          options);
+      };
+
+      const link = (label, options) => {
+        return getElement(
+          () => Array.from(document.getElementsByTagName('a'))
+                     .filter(getInnerTextPredicate(label)),
+          label,
+          options);
+      };
+
+      const icon = (name, options) => {
+        return getElement(
+          () => document.getElementsByClassName('font-awesome---fa-' + name),
+          name,
+          options);
+      };
+
+      const input = (labelOrParent, options) => {
+        return labelOrParent.getElementsByTagName ?
+            getElement(
+              () => labelOrParent.getElementsByTagName('input'),
+              'child input',
+              options
+            ) :
+            getElement(
+              () => {
+                const fields = Array.from(document.getElementsByClassName('FieldLayout---field_layout'));
+                return fields.filter(field => {
+                  const l = first(field.getElementsByTagName('label'));
+                  return l && l.innerText === labelOrParent;
+                })
+                .map(field => first(field.getElementsByTagName('input')));
+              },
+              labelOrParent,
+              options
+            );
+      };
+
+      const row = (searchText, options) => {
+        return getElement(
+          () => Array.from(document.getElementsByTagName('tr'))
+                     .filter(r => r.innerHTML.includes(searchText)),
+          searchText,
+          options);
+      };
+
+      const cell = (row, columnIndex, options) => {
+        return getElement(
+          () => {
+            const cells = Array.from(row.getElementsByTagName('td'));
+            return cells && cells.length > columnIndex && [cells[columnIndex]];
+          },
+          `column ${columnIndex} of row`,
+          options
+        );
+      };
+
+      const click = element => {
+        if (Array.isArray(element)) element.forEach(e => click(e));
+        element.focus();
+        element.click();
+      };
+
+      const enterText = (element, text) => {
+        element.focus();
+        element.value = text;
+        element.blur();
+      };
+    </script>
   </head>
   <body style="margin: 0;">
     <appian-action processmodeluuid="0014e170-668d-8000-f92f-7f0000014e7a"></appian-action>
+    <script>
+      click(await button('FILE UPLOAD'));
+      await button('UPLOAD');
+      click(await link(' This is a patch and not a new app deployment'));
+      click(await link(' Changes have been developed in HomeDev following the ABA Dev Checklist'));
+      click(await link(' For Data Stores, DDL scripts are included to handle creation of new tables or any changes to existing table schema'));
+      // add animate in from right
+      // wait longer fo upload
+      // click app link
+      // click submit
+      // add toast
+      // animate off right of screen
+      // remove self
+    </script>
   </body>
 </html>
